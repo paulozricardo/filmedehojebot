@@ -23,7 +23,7 @@ Respeite-as ao propor mudanças — não são acidentes:
 
 O mesmo fluxo existe duplicado em dois runtimes alternativos. **Qualquer mudança de lógica (filtro de filmes, formato da legenda, provedores) precisa ser aplicada nos dois arquivos** — eles compartilham `escolherFilme`/`ondeAssistir`/`montarLegenda`/`esc` por cópia, não por import:
 
-- `postar-filme.js` — **é o deploy em uso**. Script Node 20+ de execução única, disparado por `.github/workflows/filme-de-hoje.yml` (cron diário + `workflow_dispatch`). Lê config de `process.env`; falha com `process.exit(1)` para marcar o job como vermelho.
+- `postar-filme.js` — **é o deploy em uso, no ar desde 27/08/2026**, postando no canal `@filmedehojecanal`. Script Node 20+ de execução única, disparado por `.github/workflows/filme-de-hoje.yml` (cron diário + `workflow_dispatch`). Lê config de `process.env`; falha com `process.exit(1)` para marcar o job como vermelho. Os secrets são três, com os nomes exatos `BOT_TOKEN`/`TMDB_KEY`/`CHAT_ID` — um nome fora do esperado faz o GitHub interpolar string vazia sem erro, e a falha aparece só como um 401 da TMDB.
 - `src/index.js` — Cloudflare Worker, mantido só como alternativa; **não está deployado e não tem `wrangler.toml`** (removido de propósito — os dois deploys no ar postariam dois filmes por dia; o README traz o conteúdo para recriar). Handler `scheduled` para o agendamento e handler `fetch` que posta a cada requisição na URL, para teste. Lê config de `env`. Diferença de comportamento relevante: erros são engolidos silenciosamente e a resposta do Telegram não é verificada (sem `throw`, sem checagem de `ok`).
 
 Não reintroduza um `wrangler.toml` sem que o workflow do Actions seja desativado no mesmo passo.
