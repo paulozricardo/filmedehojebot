@@ -1,7 +1,30 @@
 // GitHub Actions — roda, posta o filme do dia e encerra. Zero dependências (Node 20+).
+const fs = require("fs");
+
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const TMDB_KEY = process.env.TMDB_KEY;
 const CHAT_ID = process.env.CHAT_ID;
+
+// Histórico do que já foi postado, pra não repetir filme. Fica versionado no
+// repo: o workflow commita o arquivo depois de cada post bem-sucedido.
+// Caminho relativo ao cwd, que no Actions é a raiz do repositório.
+const ARQUIVO_HISTORICO = "postados.json";
+// Páginas sorteadas até desistir de achar um filme inédito.
+const MAX_TENTATIVAS = 10;
+
+function lerHistorico() {
+  try {
+    const lista = JSON.parse(fs.readFileSync(ARQUIVO_HISTORICO, "utf8"));
+    return Array.isArray(lista) ? lista : [];
+  } catch {
+    // Arquivo ausente ou corrompido não pode impedir o post do dia.
+    return [];
+  }
+}
+
+function salvarHistorico(lista) {
+  fs.writeFileSync(ARQUIVO_HISTORICO, JSON.stringify(lista, null, 2) + "\n");
+}
 
 // O Markdown do Telegram quebra o post quando o título ou a sinopse tem * _ ` ou [.
 // Em HTML basta escapar estes três caracteres.
@@ -11,11 +34,12 @@ const esc = (s) =>
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-async function escolherFilme() {
-  const page = 1 + Math.floor(Math.random() * 20);
+const sortear = (lista) => lista[Math.floor(Math.random() * lista.length)];
+
+async function buscarPagina(page) {
   const url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&language=pt-BR&sort_by=popularity.desc&vote_count.gte=300&page=${page}`;
   const res = await fetch(url);
-  // Sem esta checagem, uma chave inválida (401) viraria "Nenhum filme
+  // Sem esta checagem, uma chave inválida (401) viraria "nenhum filme
   // encontrado" e esconderia a causa. A URL nunca entra na mensagem: ela
   // carrega a api_key.
   if (!res.ok) {
@@ -26,9 +50,24 @@ async function escolherFilme() {
     );
   }
   const data = await res.json();
-  const results = data.results || [];
-  if (!results.length) throw new Error(`TMDB devolveu 0 filmes na página ${page}`);
-  return results[Math.floor(Math.random() * results.length)];
+  return data.results || [];
+}
+
+// Sorteia páginas até cair um filme que ainda não foi postado. `reiniciar`
+// avisa que o pool acabou e o histórico deve recomeçar do zero.
+async function escolherFilme(vistos) {
+  let ultimaPagina = [];
+  for (let i = 0; i < MAX_TENTATIVAS; i++) {
+    const page = 1 + Math.floor(Math.random() * 20);
+    ultimaPagina = await buscarPagina(page);
+    const ineditos = ultimaPagina.filter((f) => !vistos.has(f.id));
+    if (ineditos.length) return { filme: sortear(ineditos), reiniciar: false };
+  }
+  // Todo o pool já foi postado. Melhor recomeçar o ciclo do que parar de postar.
+  if (!ultimaPagina.length) {
+    throw new Error(`TMDB devolveu 0 filmes em ${MAX_TENTATIVAS} páginas`);
+  }
+  return { filme: sortear(ultimaPagina), reiniciar: true };
 }
 
 async function ondeAssistir(id) {
@@ -77,8 +116,13 @@ function montarLegenda(m, onde, limite) {
 }
 
 async function enviar() {
-  const m = await escolherFilme();
-  if (!m) throw new Error("Nenhum filme encontrado");
+  const historico = lerHistorico();
+  const { filme: m, reiniciar } = await escolherFilme(
+    new Set(historico.map((h) => h.id)),
+  );
+  if (reiniciar) {
+    console.log(`Pool esgotado após ${historico.length} filmes — recomeçando o histórico.`);
+  }
   const poster = m.poster_path
     ? `https://image.tmdb.org/t/p/w500${m.poster_path}`
     : null;
@@ -108,6 +152,16 @@ async function enviar() {
   ).json();
 
   if (!data.ok) throw new Error("Telegram: " + JSON.stringify(data));
+
+  // Só grava depois do post confirmado: se o Telegram falhar, o filme continua
+  // disponível para o próximo run em vez de ser queimado à toa.
+  const registro = {
+    id: m.id,
+    titulo: m.title,
+    em: new Date().toISOString().slice(0, 10),
+  };
+  salvarHistorico(reiniciar ? [registro] : [...historico, registro]);
+
   console.log("Postado:", m.title);
 }
 

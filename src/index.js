@@ -1,4 +1,8 @@
-// Cloudflare Worker — versão alternativa do postar-filme.js (mantenha os dois em sincronia)
+// Cloudflare Worker — versão alternativa do postar-filme.js (mantenha os dois em sincronia).
+// Divergência intencional: não tem o histórico anti-repetição do postar-filme.js,
+// que grava num postados.json commitado pelo workflow. Worker não tem sistema de
+// arquivos; o equivalente aqui seria um KV binding. Como esta versão não está
+// deployada, ficou de fora.
 export default {
   // Dispara no horário do cron
   async scheduled(event, env, ctx) {

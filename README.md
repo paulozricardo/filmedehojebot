@@ -11,6 +11,7 @@ Pega um filme popular na **TMDB** e manda no grupo direto pela **API HTTP do Tel
 ```text
 filme-de-hoje/
 ├── postar-filme.js                     # versão GitHub Actions (roda e encerra)
+├── postados.json                       # histórico pra não repetir filme
 ├── .github/workflows/filme-de-hoje.yml # agendamento do GitHub Actions
 ├── src/index.js                        # versão Cloudflare Worker (não deployada)
 ├── .env.example
@@ -105,14 +106,15 @@ Se der `ETIMEDOUT` em `api.telegram.org`, é a sua rede bloqueando a API do Tele
 - **Sem Telegraf / sem polling:** é só `fetch` → POST no Telegram. Mais leve e roda em qualquer agendador.
 - **Cron em UTC** = 9h Recife (12:00 UTC), sem horário de verão.
 - **Repo privado:** 2.000 min/mês grátis (o job usa ~30-60 min/mês) e escapa do auto-desativar de 60 dias, que na doc do GitHub vale só pra repo público.
-- **Seleção atual:** filme aleatório entre os ~400 mais populares (`vote_count.gte=300`), então repetir é raro — mas não impossível.
+- **Seleção atual:** filme aleatório entre os ~400 mais populares (`vote_count.gte=300`), descartando o que já foi postado.
+- **Zero repetição:** o `postados.json` guarda os filmes já postados e o workflow commita o arquivo de volta a cada run. Quando o pool de ~400 acaba, o histórico recomeça e o ciclo se repete. De quebra, o commit diário mantém o repo ativo e evita o desligamento de workflows agendados após 60 dias em repo público.
 
 ---
 
 ## Próximos passos
 
-1. **Shipar de verdade** — escolher um dos dois deploys e deixar rodando.
-2. **Zero repetição** — guardar histórico dos IDs já postados: **KV** no Cloudflare (grátis) ou um JSON commitado no repo (GitHub Actions).
+1. ~~**Shipar de verdade**~~ — feito: GitHub Actions, postando em `@filmedehojecanal`.
+2. ~~**Zero repetição**~~ — feito no Actions, via `postados.json`. Falta o equivalente no Worker (**KV**), se um dia ele for usado.
 3. **Picks melhores** — filtrar por gênero e/ou nota mínima, ou trocar o aleatório por lançamentos (`/movie/now_playing`).
 4. **Post mais rico** — trailer (endpoint `/movie/{id}/videos` → YouTube), duração, diretor.
 5. **Alerta de falha** — ping num healthchecks.io (grátis) pra saber se um dia não postou.

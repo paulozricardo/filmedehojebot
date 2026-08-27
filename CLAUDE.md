@@ -28,6 +28,19 @@ O mesmo fluxo existe duplicado em dois runtimes alternativos. **Qualquer mudanç
 
 Não reintroduza um `wrangler.toml` sem que o workflow do Actions seja desativado no mesmo passo.
 
+Uma divergência é intencional: o **histórico anti-repetição existe só no `postar-filme.js`**, porque depende de escrever em arquivo. O Worker precisaria de um KV binding; como não está deployado, ficou sem.
+
+## Histórico anti-repetição
+
+`postados.json` na raiz guarda `{id, titulo, em}` de cada filme postado, e é **commitado de volta pelo próprio workflow** (passo "Salva o histórico", que exige `permissions: contents: write`). O `escolherFilme` sorteia até 10 páginas procurando um id inédito; se todas vierem repetidas, considera o pool esgotado, recomeça o histórico do zero e segue postando em vez de falhar.
+
+Duas invariantes que os testes cobrem e que é fácil quebrar ao mexer aqui:
+
+- **O histórico só é gravado depois do `ok` do Telegram.** Gravar antes queimaria o filme num run que falhou no envio.
+- **Um `postados.json` ausente ou corrompido não pode derrubar o post do dia** — `lerHistorico` cai para lista vazia.
+
+Efeito colateral útil: o commit diário mantém o repositório ativo, o que evita o desligamento automático de workflows agendados após 60 dias em repositório público.
+
 ## Fluxo
 
 1. Sorteia uma página de 1–20 de `discover/movie` (pt-BR, ordenado por popularidade, `vote_count.gte=300`) e um filme aleatório dessa página — ou seja, ~400 filmes no pool, e repetição é possível. Não há histórico de IDs postados (é o item 2 do roadmap).
