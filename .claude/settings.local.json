@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "mcp__ide__getDiagnostics",
+      "Bash(gh auth *)",
+      "Bash(git ls-remote *)",
+      "Bash(node --check postar-filme.js)",
+      "Bash(node --check src/index.js)",
+      "Bash(node \"/tmp/claude-1000/-home-paulo-ubuntu-Documentos-projetos-repopessoal-filmedehojebot/750b4fc3-5cbf-4a80-ba07-37537b27a604/scratchpad/test-legenda.mjs\")",
+      "Bash(git push *)",
+      "Bash(git rm *)",
+      "Bash(git check-ignore *)",
+      "Bash(node *)",
+      "Bash(git pull *)"
+    ]
+  }
+}
