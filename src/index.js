@@ -18,8 +18,20 @@ const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').
 async function escolherFilme(env) {
   const page = 1 + Math.floor(Math.random() * 20);
   const url = `https://api.themoviedb.org/3/discover/movie?api_key=${env.TMDB_KEY}&language=pt-BR&sort_by=popularity.desc&vote_count.gte=300&page=${page}`;
-  const data = await (await fetch(url)).json();
+  const res = await fetch(url);
+  // Sem esta checagem, uma chave inválida (401) viraria "Nenhum filme
+  // encontrado" e esconderia a causa. A URL nunca entra na mensagem: ela
+  // carrega a api_key.
+  if (!res.ok) {
+    const erro = await res.json().catch(() => ({}));
+    throw new Error(
+      `TMDB respondeu ${res.status}: ${erro.status_message ?? 'sem detalhe'}` +
+        (res.status === 401 ? ' (confira o secret TMDB_KEY: é a chave v3, 32 caracteres, não o token eyJ...)' : ''),
+    );
+  }
+  const data = await res.json();
   const results = data.results || [];
+  if (!results.length) throw new Error(`TMDB devolveu 0 filmes na página ${page}`);
   return results[Math.floor(Math.random() * results.length)];
 }
 
