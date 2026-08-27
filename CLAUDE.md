@@ -34,7 +34,9 @@ O repo ainda não tem commits — tudo está untracked. A estrutura de arquivos 
 
 1. Sorteia uma página de 1–20 de `discover/movie` (pt-BR, ordenado por popularidade, `vote_count.gte=300`) e um filme aleatório dessa página — ou seja, ~400 filmes no pool, e repetição é possível. Não há histórico de IDs postados (é o item 2 do roadmap).
 2. Consulta `movie/{id}/watch/providers` e usa apenas `results.BR.flatrate` (streaming por assinatura no Brasil); falha nessa etapa é ignorada e a legenda sai sem a linha "Assista em".
-3. Envia via `sendPhoto` com o poster `w500` quando há `poster_path`, senão `sendMessage`. `parse_mode: "Markdown"` — títulos ou sinopses com `*`, `_`, `[` podem quebrar o envio; é a causa mais provável de um `ok: false` do Telegram.
+3. Envia via `sendPhoto` com o poster `w500` quando há `poster_path`, senão `sendMessage`. `parse_mode: "HTML"` — todo texto vindo da TMDB passa pelo helper `esc()`, que escapa `&`, `<` e `>`. Não use `Markdown` aqui: títulos e sinopses com `*`, `_`, `` ` `` ou `[` faziam o Telegram responder `ok: false`. Ao adicionar qualquer campo novo à legenda, passe-o por `esc()`.
+
+O `montarLegenda(m, onde, limite)` respeita os limites do Telegram (1024 na caption do `sendPhoto`, 4096 no texto do `sendMessage`) truncando a sinopse com `…`. Ele faz busca binária sobre a sinopse **crua** e escapa depois — cortar o texto já escapado partiria uma entidade `&amp;` e o Telegram rejeitaria o HTML. Se acrescentar campos fixos à legenda, ponha-os dentro do `monta()` para que entrem na conta do limite.
 
 ## Rodar localmente
 

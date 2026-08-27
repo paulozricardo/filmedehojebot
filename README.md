@@ -8,7 +8,7 @@ Pega um filme popular na **TMDB** e manda no grupo direto pela **API HTTP do Tel
 
 ## Estrutura
 
-```
+```text
 filme-de-hoje/
 ├── postar-filme.js                     # versão GitHub Actions (roda e encerra)
 ├── .github/workflows/filme-de-hoje.yml # agendamento do GitHub Actions
@@ -35,7 +35,7 @@ São **duas formas de rodar o mesmo bot**. Escolha uma pra deployar de verdade; 
 
 `.env.example`:
 
-```
+```ini
 BOT_TOKEN=
 TMDB_KEY=
 CHAT_ID=
@@ -43,7 +43,7 @@ CHAT_ID=
 
 `.gitignore`:
 
-```
+```gitignore
 node_modules/
 .env
 .dev.vars
