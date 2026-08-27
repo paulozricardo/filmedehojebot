@@ -12,8 +12,7 @@ Pega um filme popular na **TMDB** e manda no grupo direto pela **API HTTP do Tel
 filme-de-hoje/
 ├── postar-filme.js                     # versão GitHub Actions (roda e encerra)
 ├── .github/workflows/filme-de-hoje.yml # agendamento do GitHub Actions
-├── src/index.js                        # versão Cloudflare Worker
-├── wrangler.toml                       # config do Cloudflare
+├── src/index.js                        # versão Cloudflare Worker (não deployada)
 ├── .env.example
 ├── .gitignore
 └── README.md
@@ -63,7 +62,16 @@ Cron: `0 12 * * *` = **12:00 UTC = 9h em Recife**. (O GitHub roda em UTC; desde 
 
 ### Opção B — Cloudflare Workers (horário exato)
 
-O código do Worker é o `src/index.js`; o `wrangler.toml` já traz o cron e aponta pra ele.
+**Deploy em uso: Opção A.** O `wrangler.toml` foi removido de propósito — com os dois deploys no ar, o grupo receberia dois filmes por dia. O `src/index.js` fica como alternativa; para usá-lo, recrie o arquivo abaixo na raiz (e aí desative o workflow do Actions):
+
+```toml
+name = "filme-de-hoje"
+main = "src/index.js"
+compatibility_date = "2026-08-27"
+
+[triggers]
+crons = ["0 12 * * *"]
+```
 
 ```bash
 npx wrangler login

@@ -21,14 +21,12 @@ Respeite-as ao propor mudanças — não são acidentes:
 
 ## Duas implantações do mesmo bot
 
-O mesmo fluxo existe duplicado em dois runtimes alternativos; o README diz para escolher um para deploy real e manter o outro como alternativa. **Qualquer mudança de lógica (filtro de filmes, formato da legenda, provedores) precisa ser aplicada nos dois arquivos** — eles compartilham `escolherFilme`/`ondeAssistir`/formatação por cópia, não por import:
+O mesmo fluxo existe duplicado em dois runtimes alternativos. **Qualquer mudança de lógica (filtro de filmes, formato da legenda, provedores) precisa ser aplicada nos dois arquivos** — eles compartilham `escolherFilme`/`ondeAssistir`/`montarLegenda`/`esc` por cópia, não por import:
 
-- `postar-filme.js` — script Node 20+ de execução única, disparado por `.github/workflows/filme-de-hoje.yml` (cron diário + `workflow_dispatch`). Lê config de `process.env`; falha com `process.exit(1)` para marcar o job como vermelho.
-- `src/index.js` — Cloudflare Worker, apontado pelo `wrangler.toml` (que também define o mesmo cron). Handler `scheduled` para o agendamento e handler `fetch` que posta imediatamente ao abrir a URL, para teste. Lê config de `env`. Diferença de comportamento relevante: erros são engolidos silenciosamente e a resposta do Telegram não é verificada (sem `throw`, sem checagem de `ok`).
+- `postar-filme.js` — **é o deploy em uso**. Script Node 20+ de execução única, disparado por `.github/workflows/filme-de-hoje.yml` (cron diário + `workflow_dispatch`). Lê config de `process.env`; falha com `process.exit(1)` para marcar o job como vermelho.
+- `src/index.js` — Cloudflare Worker, mantido só como alternativa; **não está deployado e não tem `wrangler.toml`** (removido de propósito — os dois deploys no ar postariam dois filmes por dia; o README traz o conteúdo para recriar). Handler `scheduled` para o agendamento e handler `fetch` que posta a cada requisição na URL, para teste. Lê config de `env`. Diferença de comportamento relevante: erros são engolidos silenciosamente e a resposta do Telegram não é verificada (sem `throw`, sem checagem de `ok`).
 
-## Estado atual
-
-O repo ainda não tem commits — tudo está untracked. A estrutura de arquivos já bate com a seção "Estrutura" do README. Nenhum dos dois deploys foi shipado ainda (item 1 do roadmap do README).
+Não reintroduza um `wrangler.toml` sem que o workflow do Actions seja desativado no mesmo passo.
 
 ## Fluxo
 
