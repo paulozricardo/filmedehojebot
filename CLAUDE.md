@@ -38,8 +38,16 @@ O `montarLegenda(m, onde, limite)` respeita os limites do Telegram (1024 na capt
 
 ## Rodar localmente
 
+Existe um `.env` local (fora do git). Ele **não** é lido sozinho — não há `dotenv`, então use a flag nativa do Node:
+
 ```bash
-BOT_TOKEN=... TMDB_KEY=... CHAT_ID=... node postar-filme.js
+node --env-file=.env postar-filme.js
 ```
 
 Isso posta de verdade no grupo configurado — use um `CHAT_ID` de teste.
+
+**A rede da máquina de desenvolvimento não alcança o `api.telegram.org`** (verificado em 27/08/2026: TMDB e GitHub respondem, o Telegram dá `ETIMEDOUT`; o bloqueio é do provedor, não do sandbox). Consequências ao trabalhar aqui:
+
+- Qualquer teste que chame o Telegram falha na conexão, antes de exercitar o código. Não interprete isso como bug.
+- Para exercitar `montarLegenda`/`esc` sem rede, stube o `globalThis.fetch` e importe o `postar-filme.js` — foi assim que o truncamento e o escape foram validados.
+- A validação de ponta a ponta é o **Run workflow** no GitHub Actions, que roda fora dessa rede.

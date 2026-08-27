@@ -85,6 +85,20 @@ Testa abrindo a URL `*.workers.dev` que aparece no deploy — cada visita posta 
 
 ---
 
+## Teste local
+
+O `.env` fica fora do git e serve **só** pra rodar na mão — no Actions os secrets já viram variáveis de ambiente sozinhos. Como não tem `dotenv`, use a flag nativa do Node (20.6+):
+
+```bash
+node --env-file=.env postar-filme.js
+```
+
+Posta de verdade no grupo do `CHAT_ID` — use um grupo de teste.
+
+Se der `ETIMEDOUT` em `api.telegram.org`, é a sua rede bloqueando a API do Telegram (dá pra confirmar com `curl -sI https://api.telegram.org`; se a TMDB e o GitHub responderem e só o Telegram não, é isso). Nesse caso o teste local não roda — use o **Run workflow** do Actions, que executa nos runners do GitHub. Pelo mesmo motivo, pegue o `CHAT_ID` por um bot dentro do app (@RawDataBot, @getidsbot) em vez do `getUpdates` no navegador.
+
+---
+
 ## Decisões tomadas
 
 - **Nome exibido no post:** "Filme de Hoje".
