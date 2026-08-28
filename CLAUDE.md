@@ -64,3 +64,11 @@ Isso posta de verdade no grupo configurado — use um `CHAT_ID` de teste.
 - Qualquer teste que chame o Telegram falha na conexão, antes de exercitar o código. Não interprete isso como bug.
 - Para exercitar `montarLegenda`/`esc` sem rede, stube o `globalThis.fetch` e importe o `postar-filme.js` — foi assim que o truncamento e o escape foram validados.
 - A validação de ponta a ponta é o **Run workflow** no GitHub Actions, que roda fora dessa rede.
+
+## Por que o repositório é público
+
+Público desde 28/08/2026, e isso **não é descuido** — foi a correção para o cron nunca disparar. Nos dois primeiros dias do bot, nenhum run com `event=schedule` chegou a ser criado (os horários de 12:00 e 14:37 UTC passaram em branco), enquanto `workflow_dispatch` manual funcionava sempre. Não era fila, não era cota (US$ 0,04 no mês) e não era incidente do GitHub: é o padrão conhecido de agendamentos despriorizados em **repositório privado novo de conta free**.
+
+Não volte o repositório para privado sem antes ter outra forma de disparo (um agendador externo chamando `workflow_dispatch` pela API). Se voltar, o post diário para de sair sem nenhum erro visível — não existe job vermelho quando o run sequer é criado; o sintoma é só o silêncio no canal.
+
+Nenhum segredo mora no repositório: `BOT_TOKEN`/`TMDB_KEY`/`CHAT_ID` são secrets do Actions, `.env` nunca foi rastreado e o `.env.example` só tem os nomes das variáveis. O histórico completo foi varrido antes da abertura.
