@@ -59,7 +59,7 @@ node_modules/
 2. Settings → Secrets and variables → Actions → cria `BOT_TOKEN`, `TMDB_KEY`, `CHAT_ID`.
 3. Testa: aba **Actions** → Filme de Hoje → **Run workflow**.
 
-Cron: `37 14 * * *` = **14:37 UTC = 11h37 em Recife**. (O GitHub roda em UTC; desde mar/2026 dá pra usar o campo `timezone:` no schedule se preferir.) O horário pode atrasar alguns minutos.
+Cron: `9 12 * * *` = **12:09 UTC = 09h09 em Recife**. (O GitHub roda em UTC; desde mar/2026 dá pra usar o campo `timezone:` no schedule se preferir.) O horário pode atrasar alguns minutos.
 
 ### Opção B — Cloudflare Workers (horário exato)
 
@@ -71,7 +71,7 @@ main = "src/index.js"
 compatibility_date = "2026-08-27"
 
 [triggers]
-crons = ["37 14 * * *"]
+crons = ["9 12 * * *"]
 ```
 
 ```bash
@@ -104,8 +104,8 @@ Se der `ETIMEDOUT` em `api.telegram.org`, é a sua rede bloqueando a API do Tele
 
 - **Nome exibido no post:** "Filme de Hoje".
 - **Sem Telegraf / sem polling:** é só `fetch` → POST no Telegram. Mais leve e roda em qualquer agendador.
-- **Cron em UTC** = 11h37 Recife (14:37 UTC), sem horário de verão.
-- **Repo privado:** 2.000 min/mês grátis (o job usa ~30-60 min/mês) e escapa do auto-desativar de 60 dias, que na doc do GitHub vale só pra repo público.
+- **Cron em UTC** = 09h09 Recife (12:09 UTC), sem horário de verão.
+- **Repo público:** era privado no começo (2.000 min/mês grátis, o job usa ~30-60 min/mês), mas em repo privado novo de conta free o agendamento simplesmente não disparava — nenhum run com `event=schedule` chegava a ser criado, sem erro visível. Aberto em 28/08/2026 e o cron passou a rodar todo dia. Não volte pra privado sem antes ter um agendador externo chamando `workflow_dispatch` pela API.
 - **Seleção atual:** filme aleatório entre os ~400 mais populares (`vote_count.gte=300`), descartando o que já foi postado.
 - **Zero repetição:** o `postados.json` guarda os filmes já postados e o workflow commita o arquivo de volta a cada run. Quando o pool de ~400 acaba, o histórico recomeça e o ciclo se repete. De quebra, o commit diário mantém o repo ativo e evita o desligamento de workflows agendados após 60 dias em repo público.
 

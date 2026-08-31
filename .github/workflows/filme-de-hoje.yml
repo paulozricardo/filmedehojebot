@@ -1,7 +1,7 @@
 name: Filme de Hoje
 on:
   schedule:
-    - cron: "37 14 * * *" # 14:37 UTC = 11h37 em Recife
+    - cron: "9 12 * * *" # 12:09 UTC = 09h09 em Recife
   workflow_dispatch: # botão "Run workflow" pra testar
 permissions:
   contents: write # pra commitar o postados.json de volta

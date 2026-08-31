@@ -15,7 +15,7 @@ Mensagens, comentários e nomes de identificadores estão em português; mantenh
 Respeite-as ao propor mudanças — não são acidentes:
 
 - **Sem Telegraf, sem polling, sem dependências, sem `package.json`**: apenas `fetch` nativo → POST na API HTTP do Telegram. Adicionar uma lib quebra a premissa de "roda em qualquer agendador de graça". Comandos on-demand (`/filme`) exigiriam webhook, ou seja, mudança de arquitetura — está no roadmap como opcional.
-- **Cron em UTC** (`37 14 * * *` = 11h37 em Recife), sem horário de verão. O minuto quebrado é proposital: agendamentos em minutos redondos (`:00`, `:30`) caem no pico de fila do GitHub e atrasam mais.
+- **Cron em UTC** (`9 12 * * *` = 09h09 em Recife), sem horário de verão. O minuto quebrado é proposital: agendamentos em minutos redondos (`:00`, `:30`) caem no pico de fila do GitHub e atrasam mais. O agendado é só o pedido: em conta free os runs saem da fila com **3h+ de atraso** (medido em 28–30/08/2026: 9h02, 3h15, 3h33), então o post chega perto do meio-dia em Recife. Foi por isso que o horário saiu de 14:37 UTC para 12:09 UTC em 31/08/2026 — antecipar a janela, já que o atraso em si não é controlável daqui.
 - **Nome exibido no post**: "Filme de Hoje".
 - Não há build nem testes.
 
